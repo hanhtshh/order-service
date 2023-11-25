@@ -1,30 +1,28 @@
 const customerModel = require("../models/customerModel");
-const jwt=require('jsonwebtoken');
-class AuthenticateMiddleware{
-    async authenAdmin(req,res,next){
+const jwt = require('jsonwebtoken');
+class AuthenticateMiddleware {
+    async authenAdmin(req, res, next) {
         try {
-            const user=await customerModel.findOne({_id:req._id});
-            if(user.admin==1){
+            const isPassAuth = req.headers["x-api-key"] === process.env.API_KEY;
+            if (isPassAuth) {
                 next();
             }
-            else{
-                return res.status(404).json('not found');
-            }
+            return res.status(401).json('Unauthorize');
         } catch (error) {
             return res.status(500).json('loi server');
         }
     }
-    verifyToken(req,res,next){
+    verifyToken(req, res, next) {
         try {
-            const _id=jwt.verify(req.headers.authorization,process.env.TOKEN_SECRET);
-            if(_id){
-                req._id=_id;
+            const isPassAuth = req.headers["x-api-key"] === process.env.API_KEY;
+            if (isPassAuth) {
                 next();
             }
+            return res.status(401).json('Unauthorize');
         } catch (error) {
             return res.status(403).json('token is not correct');
         }
 
     }
 }
-module.exports=new AuthenticateMiddleware();
+module.exports = new AuthenticateMiddleware();
